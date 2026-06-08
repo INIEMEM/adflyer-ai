@@ -1,0 +1,13 @@
+{
+  "name": "adflyer-ai",
+  "version": "1.0.0",
+  "description": "AdFlyer AI - AI-powered advertising flyer generator",
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "node server/index.js",
+    "client": "npm --prefix client run dev"
+  },
+  "dependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
