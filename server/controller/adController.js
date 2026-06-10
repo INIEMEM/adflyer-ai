@@ -25,7 +25,11 @@ async function generate(req, res, next) {
     const flyerPrompt = await promptService.createFlyerPrompt(businessInfo, researchResult, copyResult);
 
     // Step 4: Generate Flyer Image
-    const imageUrl = await imageService.generateImage(flyerPrompt);
+    const imageUrl = await imageService.generateImage(flyerPrompt, {
+      businessInfo,
+      copyResult,
+      researchResult,
+    });
 
     // Step 5: Return combined result
     return res.json({

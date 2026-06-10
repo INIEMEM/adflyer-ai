@@ -1,4 +1,4 @@
-const { getOpenAIClient } = require('./openaiClient');
+const { generateText, parseJsonResponse } = require('./geminiService');
 
 /**
  * Analyzes business info and returns market research data.
@@ -27,23 +27,14 @@ Business Details:
 
 Return ONLY valid JSON, no markdown, no extra text.`;
 
-  const response = await getOpenAIClient().chat.completions.create({
-    model: 'gpt-4o',
-    messages: [
-      {
-        role: 'system',
-        content: 'You are an expert market research analyst and advertising strategist.',
-      },
-      {
-        role: 'user',
-        content: userPrompt,
-      },
-    ],
+  const content = await generateText({
+    systemInstruction: 'You are an expert market research analyst and advertising strategist.',
+    prompt: userPrompt,
     temperature: 0.7,
+    responseMimeType: 'application/json',
   });
 
-  const content = response.choices[0].message.content.trim();
-  return JSON.parse(content);
+  return parseJsonResponse(content);
 }
 
 module.exports = { analyze };

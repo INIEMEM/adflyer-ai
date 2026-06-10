@@ -1,4 +1,4 @@
-const { getOpenAIClient } = require('./openaiClient');
+const { generateText } = require('./geminiService');
 
 /**
  * Creates a detailed image generation prompt for the advertising flyer.
@@ -33,23 +33,12 @@ End the prompt with: "professional advertising flyer, high resolution, print qua
 
 Return ONLY the image generation prompt as plain text.`;
 
-  const response = await getOpenAIClient().chat.completions.create({
-    model: 'gpt-4o',
-    messages: [
-      {
-        role: 'system',
-        content:
-          'You are an expert graphic designer and art director who writes detailed prompts for AI image generation.',
-      },
-      {
-        role: 'user',
-        content: userPrompt,
-      },
-    ],
+  return generateText({
+    systemInstruction:
+      'You are an expert graphic designer and art director who writes detailed prompts for AI image generation.',
+    prompt: userPrompt,
     temperature: 0.7,
   });
-
-  return response.choices[0].message.content.trim();
 }
 
 module.exports = { createFlyerPrompt };

@@ -1,4 +1,4 @@
-const { getOpenAIClient } = require('./openaiClient');
+const { generateText, parseJsonResponse } = require('./geminiService');
 
 /**
  * Generates advertising copy based on business info and research results.
@@ -33,23 +33,14 @@ Guidelines:
 
 Return ONLY valid JSON, no markdown, no extra text.`;
 
-  const response = await getOpenAIClient().chat.completions.create({
-    model: 'gpt-4o',
-    messages: [
-      {
-        role: 'system',
-        content: 'You are a world-class advertising copywriter who creates high-converting marketing copy.',
-      },
-      {
-        role: 'user',
-        content: userPrompt,
-      },
-    ],
+  const content = await generateText({
+    systemInstruction: 'You are a world-class advertising copywriter who creates high-converting marketing copy.',
+    prompt: userPrompt,
     temperature: 0.8,
+    responseMimeType: 'application/json',
   });
 
-  const content = response.choices[0].message.content.trim();
-  return JSON.parse(content);
+  return parseJsonResponse(content);
 }
 
 module.exports = { generate };

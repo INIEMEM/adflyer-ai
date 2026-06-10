@@ -14,7 +14,7 @@ const INITIAL_FORM = {
   contactInfo: '',
 }
 
-const SERVER_URL = 'http://localhost:5000'
+const SERVER_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 
 export default function App() {
   const [formData,       setFormData]       = useState(INITIAL_FORM)
@@ -107,7 +107,7 @@ export default function App() {
               <strong>Something went wrong:</strong> {error}
               <br />
               <span style={{ opacity: 0.75, fontSize: '0.86rem' }}>
-                Make sure your <code>OPENAI_API_KEY</code> is set in{' '}
+                Make sure your <code>GEMINI_API_KEY</code> is set in{' '}
                 <code>server/.env</code> and the server is running on port 5000.
               </span>
             </div>
