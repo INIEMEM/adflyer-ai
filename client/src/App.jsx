@@ -14,7 +14,7 @@ const INITIAL_FORM = {
   contactInfo: '',
 }
 
-const SERVER_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+const SERVER_URL = (import.meta.env.VITE_API_URL || 'https://adflyer-ai.onrender.com').replace(/\/$/, '')
 
 export default function App() {
   const [formData,       setFormData]       = useState(INITIAL_FORM)

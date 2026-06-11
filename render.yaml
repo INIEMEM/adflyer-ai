@@ -15,4 +15,4 @@ services:
       - key: GEMINI_IMAGE_MODEL
         value: gemini-3.1-flash-image
       - key: CLIENT_URL
-        sync: false
+        value: https://adflyer-ai.vercel.app
