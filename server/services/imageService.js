@@ -1,7 +1,20 @@
 // TO SWAP IMAGE PROVIDER: replace the implementation below.
 // Keep the function signature: async generateImage(prompt) => imageUrl string
 
-const { GEMINI_API_KEY, GEMINI_IMAGE_MODEL } = require('../config/env');
+const {
+  GEMINI_API_KEY,
+  GEMINI_IMAGE_MODEL,
+  IMAGE_PROVIDER,
+  HF_TOKEN,
+  HF_MODEL,
+  POLLINATIONS_IMAGE_URL,
+} = require('../config/env');
+
+const IMAGE_PROVIDERS = {
+  GEMINI: 'gemini',
+  HUGGINGFACE: 'huggingface',
+  POLLINATIONS: 'pollinations',
+};
 
 function escapeXml(value = '') {
   return String(value)
@@ -93,59 +106,145 @@ function createFallbackFlyer({ businessInfo = {}, copyResult = {}, researchResul
   return `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
 }
 
-/**
- * Generates an advertising flyer image using Gemini's native image model.
- * @param {string} prompt - The detailed image generation prompt
- * @returns {string} imageUrl
- */
-async function generateImage(prompt, fallbackData = {}) {
-  if (!GEMINI_API_KEY) {
-    return createFallbackFlyer(fallbackData);
+async function responseToDataUrl(response, providerName) {
+  const contentType = response.headers.get('content-type') || '';
+
+  if (!response.ok) {
+    const message = contentType.includes('application/json')
+      ? JSON.stringify(await response.json().catch(() => ({})))
+      : await response.text().catch(() => `${providerName} returned ${response.status}`);
+    throw new Error(`${providerName} returned ${response.status}: ${message}`);
   }
 
-  const imagePrompt = `${prompt}
+  if (!contentType.startsWith('image/')) {
+    const text = await response.text().catch(() => '');
+    throw new Error(`${providerName} returned ${contentType || 'non-image response'}: ${text.slice(0, 220)}`);
+  }
 
-Do not include fake brand names. Make this look like a polished, modern advertisement flyer.`;
-  const endpoint = `https://generativelanguage.googleapis.com/v1/models/${GEMINI_IMAGE_MODEL}:generateContent`;
-  let response;
+  const buffer = Buffer.from(await response.arrayBuffer());
+  return `data:${contentType};base64,${buffer.toString('base64')}`;
+}
 
-  try {
-    response = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-goog-api-key': GEMINI_API_KEY,
+async function generateWithHuggingFace(imagePrompt) {
+  if (!HF_TOKEN) {
+    throw new Error('HF_TOKEN is not set.');
+  }
+
+  const modelPath = HF_MODEL.split('/').map(encodeURIComponent).join('/');
+  const endpoint = `https://api-inference.huggingface.co/models/${modelPath}`;
+  const response = await fetch(endpoint, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${HF_TOKEN}`,
+      'Content-Type': 'application/json',
+      Accept: 'image/png',
+    },
+    body: JSON.stringify({
+      inputs: imagePrompt,
+      parameters: {
+        width: 1024,
+        height: 1024,
+        num_inference_steps: 8,
+        guidance_scale: 7.5,
+        seed: Math.floor(Math.random() * 1_000_000_000),
+        negative_prompt: 'blurry, low quality, misspelled words, distorted text, extra fingers, watermark',
       },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [{ text: imagePrompt }],
-          },
-        ],
-      }),
-    });
-  } catch (error) {
-    console.warn(`[Image fallback] ${error.message}`);
-    return createFallbackFlyer(fallbackData);
+      options: {
+        wait_for_model: true,
+      },
+    }),
+  });
+
+  return responseToDataUrl(response, 'Hugging Face');
+}
+
+async function generateWithPollinations(imagePrompt) {
+  const encodedPrompt = encodeURIComponent(`${imagePrompt}
+
+Unique layout, varied composition, no watermark, polished commercial flyer, readable headline.`);
+  const seed = Math.floor(Math.random() * 1_000_000_000);
+  const baseUrl = POLLINATIONS_IMAGE_URL.replace(/\/$/, '');
+  const response = await fetch(`${baseUrl}/prompt/${encodedPrompt}?width=1024&height=1024&model=flux&nologo=true&enhance=true&seed=${seed}`);
+
+  return responseToDataUrl(response, 'Pollinations');
+}
+
+async function generateWithGemini(imagePrompt) {
+  if (!GEMINI_API_KEY) {
+    throw new Error('GEMINI_API_KEY is not set.');
   }
+
+  const endpoint = `https://generativelanguage.googleapis.com/v1/models/${GEMINI_IMAGE_MODEL}:generateContent`;
+  const response = await fetch(endpoint, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-goog-api-key': GEMINI_API_KEY,
+    },
+    body: JSON.stringify({
+      contents: [
+        {
+          parts: [{ text: imagePrompt }],
+        },
+      ],
+    }),
+  });
 
   const payload = await response.json().catch(() => ({}));
 
   if (!response.ok) {
     const message = payload.error?.message || `Gemini image API returned ${response.status}`;
-    console.warn(`[Image fallback] ${message}`);
-    return createFallbackFlyer(fallbackData);
+    throw new Error(message);
   }
 
   const imagePart = payload.candidates?.[0]?.content?.parts?.find(part => part.inlineData?.data);
 
   if (!imagePart) {
-    console.warn('[Image fallback] Gemini image API did not return image data.');
-    return createFallbackFlyer(fallbackData);
+    throw new Error('Gemini image API did not return image data.');
   }
 
   const mimeType = imagePart.inlineData.mimeType || 'image/png';
   return `data:${mimeType};base64,${imagePart.inlineData.data}`;
+}
+
+/**
+ * Generates an advertising flyer image.
+ * Tries the configured free/low-cost provider first, then falls back gracefully.
+ * @param {string} prompt - The detailed image generation prompt
+ * @returns {string} imageUrl
+ */
+async function generateImage(prompt, fallbackData = {}) {
+  const imagePrompt = `${prompt}
+
+Do not include fake brand names. Make this look like a polished, modern advertisement flyer.`;
+  const preferredProvider = IMAGE_PROVIDER.toLowerCase();
+  const providerOrder = [
+    preferredProvider,
+    IMAGE_PROVIDERS.HUGGINGFACE,
+    IMAGE_PROVIDERS.POLLINATIONS,
+    IMAGE_PROVIDERS.GEMINI,
+  ].filter((provider, index, providers) => provider && providers.indexOf(provider) === index);
+
+  for (const provider of providerOrder) {
+    try {
+      if (provider === IMAGE_PROVIDERS.HUGGINGFACE) {
+        return await generateWithHuggingFace(imagePrompt);
+      }
+
+      if (provider === IMAGE_PROVIDERS.POLLINATIONS) {
+        return await generateWithPollinations(imagePrompt);
+      }
+
+      if (provider === IMAGE_PROVIDERS.GEMINI) {
+        return await generateWithGemini(imagePrompt);
+      }
+    } catch (error) {
+      console.warn(`[Image provider failed: ${provider}] ${error.message}`);
+    }
+  }
+
+  console.warn('[Image fallback] All image providers failed. Returning local SVG flyer.');
+  return createFallbackFlyer(fallbackData);
 }
 
 module.exports = { generateImage };

@@ -14,5 +14,13 @@ services:
         value: gemini-3.1-flash-lite
       - key: GEMINI_IMAGE_MODEL
         value: gemini-3.1-flash-image
+      - key: IMAGE_PROVIDER
+        value: huggingface
+      - key: HF_TOKEN
+        sync: false
+      - key: HF_MODEL
+        value: ByteDance/Hyper-SD
+      - key: POLLINATIONS_IMAGE_URL
+        value: https://image.pollinations.ai
       - key: CLIENT_URL
         value: https://adflyer-ai.vercel.app

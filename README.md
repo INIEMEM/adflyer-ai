@@ -34,9 +34,34 @@ This version does not use OpenAI.
 GEMINI_API_KEY=your_google_ai_studio_key_here
 GEMINI_MODEL=gemini-3.1-flash-lite
 GEMINI_IMAGE_MODEL=gemini-3.1-flash-image
+IMAGE_PROVIDER=huggingface
+HF_TOKEN=your_huggingface_token_here
+HF_MODEL=ByteDance/Hyper-SD
+POLLINATIONS_IMAGE_URL=https://image.pollinations.ai
 ```
 
-Gemini is used for both text and image generation, so no separate image API key is required for the default setup.
+Gemini is used for text generation. Image generation tries the configured image provider first, then falls back gracefully.
+
+### Image provider options
+
+Use Hugging Face first:
+
+```env
+IMAGE_PROVIDER=huggingface
+HF_TOKEN=your_huggingface_token_here
+HF_MODEL=ByteDance/Hyper-SD
+```
+
+Create a Hugging Face token with Inference Providers permission from your Hugging Face account settings.
+
+Use Pollinations first:
+
+```env
+IMAGE_PROVIDER=pollinations
+POLLINATIONS_IMAGE_URL=https://image.pollinations.ai
+```
+
+Pollinations does not need a key, but it can throttle or return queue-full responses. If Hugging Face, Pollinations, and Gemini image generation all fail, the app returns a local SVG flyer fallback.
 
 ## Tech Stack
 
@@ -59,6 +84,10 @@ Add these Render environment variables:
 - `GEMINI_API_KEY`: your Google AI Studio Gemini API key
 - `GEMINI_MODEL`: `gemini-3.1-flash-lite`
 - `GEMINI_IMAGE_MODEL`: `gemini-3.1-flash-image`
+- `IMAGE_PROVIDER`: `huggingface`
+- `HF_TOKEN`: your Hugging Face token
+- `HF_MODEL`: `ByteDance/Hyper-SD`
+- `POLLINATIONS_IMAGE_URL`: `https://image.pollinations.ai`
 - `CLIENT_URL`: your deployed Vercel frontend URL, for example `https://your-app.vercel.app`
 
 After deployment, your backend URL will look like:

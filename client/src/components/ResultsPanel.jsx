@@ -55,8 +55,26 @@ async function downloadImage(url, filename) {
   }
 }
 
+function getFlyerFilename(imageUrl) {
+  const timestamp = Date.now()
+
+  if (imageUrl?.startsWith('data:image/svg+xml')) {
+    return `adflyer-${timestamp}.svg`
+  }
+
+  if (imageUrl?.startsWith('data:image/jpeg')) {
+    return `adflyer-${timestamp}.jpg`
+  }
+
+  if (imageUrl?.startsWith('data:image/webp')) {
+    return `adflyer-${timestamp}.webp`
+  }
+
+  return `adflyer-${timestamp}.png`
+}
+
 export default function ResultsPanel({ results, onReset }) {
-  const filename = `adflyer-${Date.now()}.png`
+  const filename = getFlyerFilename(results.imageUrl)
 
   return (
     <div className="results-panel">
