@@ -58,11 +58,41 @@ app.use((req, res) => {
   res.status(404).json({ success: false, error: 'Route not found' });
 });
 
+function getPublicErrorMessage(error) {
+  const message = error?.message || '';
+
+  if (message.includes('OPENAI_API_KEY')) {
+    return 'OpenAI API key is missing on the backend. Set OPENAI_API_KEY in Render and redeploy.';
+  }
+
+  if (message.includes('Incorrect API key') || message.includes('invalid_api_key')) {
+    return 'OpenAI API key is invalid. Check OPENAI_API_KEY in Render.';
+  }
+
+  if (
+    message.includes('quota') ||
+    message.includes('billing') ||
+    message.includes('insufficient_quota')
+  ) {
+    return 'OpenAI quota or billing is not active for this API key.';
+  }
+
+  if (message.includes('model') && message.includes('does not exist')) {
+    return 'The configured OpenAI model is unavailable for this API key.';
+  }
+
+  if (message.includes('CORS blocked origin')) {
+    return message;
+  }
+
+  return 'Internal server error';
+}
+
 // ── Global error handler ──────────────────────────────────────────────────────
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   console.error('[Global Error]', err);
-  res.status(500).json({ success: false, error: 'Internal server error' });
+  res.status(500).json({ success: false, error: getPublicErrorMessage(err) });
 });
 
 // ── Start ─────────────────────────────────────────────────────────────────────

@@ -107,8 +107,7 @@ export default function App() {
               <strong>Something went wrong:</strong> {error}
               <br />
               <span style={{ opacity: 0.75, fontSize: '0.86rem' }}>
-                Make sure your <code>GEMINI_API_KEY</code> is set in{' '}
-                <code>server/.env</code> and the server is running on port 5000.
+                Make sure the backend environment variables are set and the API server is running.
               </span>
             </div>
           </div>
