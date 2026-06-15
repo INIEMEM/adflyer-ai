@@ -13,34 +13,33 @@ AI-powered flyer and advertisement generator.
 ## How to swap AI providers
 
 **Research / Copywriting / Prompt services:**
-Open `server/services/researchService.js` (or copywriting/prompt) and replace the Gemini API call with your preferred LLM. Keep the function signature and return shape the same.
+Open `server/services/researchService.js` (or copywriting/prompt) and replace the OpenAI API call with your preferred LLM. Keep the function signature and return shape the same.
 
 **Image generation:**
-Open `server/services/imageService.js` and replace the Gemini image implementation. The function must remain: `async generateImage(prompt) => string (image URL)`
+Open `server/services/imageService.js` and replace the OpenAI image implementation. The function must remain: `async generateImage(prompt) => string (image URL)`
 
 ## API Keys needed
 
-- `GEMINI_API_KEY` — for research, copywriting, and prompt generation using the Gemini API free tier
-- `IMAGE_GEN_API_KEY` — for alternative image generation providers (optional; not needed for the Gemini image setup)
+- `OPENAI_API_KEY` — for research, copywriting, prompt generation, and flyer image generation
+- `GEMINI_API_KEY` — optional fallback for Gemini text/image generation
+- `HF_TOKEN` — optional fallback for Hugging Face image generation
 
-## Free API setup
+## API setup
 
-This version does not use OpenAI.
+This version uses OpenAI by default for research, copywriting, prompt generation, and flyer image generation.
 
-1. Create a free Gemini API key in Google AI Studio.
+1. Add your client's OpenAI API key to `server/.env`.
 2. Add it to `server/.env`:
 
 ```env
-GEMINI_API_KEY=your_google_ai_studio_key_here
-GEMINI_MODEL=gemini-3.1-flash-lite
-GEMINI_IMAGE_MODEL=gemini-3.1-flash-image
-IMAGE_PROVIDER=huggingface
-HF_TOKEN=your_huggingface_token_here
-HF_MODEL=ByteDance/Hyper-SD
-POLLINATIONS_IMAGE_URL=https://image.pollinations.ai
+AI_PROVIDER=openai
+IMAGE_PROVIDER=openai
+OPENAI_API_KEY=your_openai_key_here
+OPENAI_TEXT_MODEL=gpt-4o
+OPENAI_IMAGE_MODEL=gpt-image-1
 ```
 
-Gemini is used for text generation. Image generation tries the configured image provider first, then falls back gracefully.
+The app can still fall back to Hugging Face, Pollinations, Gemini image generation, and a local SVG flyer if the configured image provider fails.
 
 ### Image provider options
 
@@ -67,7 +66,7 @@ Pollinations does not need a key, but it can throttle or return queue-full respo
 
 - Frontend: React + Vite
 - Backend: Node.js + Express
-- AI: Gemini API text + image generation (swappable)
+- AI: OpenAI text + image generation (swappable)
 
 ## Deployment
 
@@ -84,7 +83,11 @@ Add these Render environment variables:
 - `GEMINI_API_KEY`: your Google AI Studio Gemini API key
 - `GEMINI_MODEL`: `gemini-3.1-flash-lite`
 - `GEMINI_IMAGE_MODEL`: `gemini-3.1-flash-image`
-- `IMAGE_PROVIDER`: `huggingface`
+- `AI_PROVIDER`: `openai`
+- `IMAGE_PROVIDER`: `openai`
+- `OPENAI_API_KEY`: your OpenAI API key
+- `OPENAI_TEXT_MODEL`: `gpt-4o`
+- `OPENAI_IMAGE_MODEL`: `gpt-image-1`
 - `HF_TOKEN`: your Hugging Face token
 - `HF_MODEL`: `ByteDance/Hyper-SD`
 - `POLLINATIONS_IMAGE_URL`: `https://image.pollinations.ai`

@@ -1,4 +1,8 @@
-const { generateText, parseJsonResponse } = require('./geminiService');
+const { AI_PROVIDER } = require('../config/env');
+const geminiService = require('./geminiService');
+const openaiService = require('./openaiService');
+
+const textService = AI_PROVIDER === 'gemini' ? geminiService : openaiService;
 
 /**
  * Analyzes business info and returns market research data.
@@ -27,14 +31,14 @@ Business Details:
 
 Return ONLY valid JSON, no markdown, no extra text.`;
 
-  const content = await generateText({
+  const content = await textService.generateText({
     systemInstruction: 'You are an expert market research analyst and advertising strategist.',
     prompt: userPrompt,
     temperature: 0.7,
     responseMimeType: 'application/json',
   });
 
-  return parseJsonResponse(content);
+  return textService.parseJsonResponse(content);
 }
 
 module.exports = { analyze };

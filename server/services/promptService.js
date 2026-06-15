@@ -1,4 +1,8 @@
-const { generateText } = require('./geminiService');
+const { AI_PROVIDER } = require('../config/env');
+const geminiService = require('./geminiService');
+const openaiService = require('./openaiService');
+
+const textService = AI_PROVIDER === 'gemini' ? geminiService : openaiService;
 
 /**
  * Creates a detailed image generation prompt for the advertising flyer.
@@ -33,7 +37,7 @@ End the prompt with: "professional advertising flyer, high resolution, print qua
 
 Return ONLY the image generation prompt as plain text.`;
 
-  return generateText({
+  return textService.generateText({
     systemInstruction:
       'You are an expert graphic designer and art director who writes detailed prompts for AI image generation.',
     prompt: userPrompt,

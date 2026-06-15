@@ -2,6 +2,8 @@
 // Keep the function signature: async generateImage(prompt) => imageUrl string
 
 const {
+  OPENAI_API_KEY,
+  OPENAI_IMAGE_MODEL,
   GEMINI_API_KEY,
   GEMINI_IMAGE_MODEL,
   IMAGE_PROVIDER,
@@ -11,6 +13,7 @@ const {
 } = require('../config/env');
 
 const IMAGE_PROVIDERS = {
+  OPENAI: 'openai',
   GEMINI: 'gemini',
   HUGGINGFACE: 'huggingface',
   POLLINATIONS: 'pollinations',
@@ -158,6 +161,46 @@ async function generateWithHuggingFace(imagePrompt) {
   return responseToDataUrl(response, 'Hugging Face');
 }
 
+async function generateWithOpenAI(imagePrompt) {
+  if (!OPENAI_API_KEY) {
+    throw new Error('OPENAI_API_KEY is not set.');
+  }
+
+  const response = await fetch('https://api.openai.com/v1/images/generations', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${OPENAI_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: OPENAI_IMAGE_MODEL,
+      prompt: imagePrompt,
+      size: '1024x1024',
+      n: 1,
+    }),
+  });
+
+  const payload = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    const message = payload.error?.message || `OpenAI image API returned ${response.status}`;
+    throw new Error(message);
+  }
+
+  const image = payload.data?.[0];
+
+  if (image?.b64_json) {
+    return `data:image/png;base64,${image.b64_json}`;
+  }
+
+  if (image?.url) {
+    const imageResponse = await fetch(image.url);
+    return responseToDataUrl(imageResponse, 'OpenAI image URL');
+  }
+
+  throw new Error('OpenAI image API did not return image data.');
+}
+
 async function generateWithPollinations(imagePrompt) {
   const encodedPrompt = encodeURIComponent(`${imagePrompt}
 
@@ -220,6 +263,7 @@ Do not include fake brand names. Make this look like a polished, modern advertis
   const preferredProvider = IMAGE_PROVIDER.toLowerCase();
   const providerOrder = [
     preferredProvider,
+    IMAGE_PROVIDERS.OPENAI,
     IMAGE_PROVIDERS.HUGGINGFACE,
     IMAGE_PROVIDERS.POLLINATIONS,
     IMAGE_PROVIDERS.GEMINI,
@@ -227,6 +271,10 @@ Do not include fake brand names. Make this look like a polished, modern advertis
 
   for (const provider of providerOrder) {
     try {
+      if (provider === IMAGE_PROVIDERS.OPENAI) {
+        return await generateWithOpenAI(imagePrompt);
+      }
+
       if (provider === IMAGE_PROVIDERS.HUGGINGFACE) {
         return await generateWithHuggingFace(imagePrompt);
       }

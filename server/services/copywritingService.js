@@ -1,4 +1,8 @@
-const { generateText, parseJsonResponse } = require('./geminiService');
+const { AI_PROVIDER } = require('../config/env');
+const geminiService = require('./geminiService');
+const openaiService = require('./openaiService');
+
+const textService = AI_PROVIDER === 'gemini' ? geminiService : openaiService;
 
 /**
  * Generates advertising copy based on business info and research results.
@@ -33,14 +37,14 @@ Guidelines:
 
 Return ONLY valid JSON, no markdown, no extra text.`;
 
-  const content = await generateText({
+  const content = await textService.generateText({
     systemInstruction: 'You are a world-class advertising copywriter who creates high-converting marketing copy.',
     prompt: userPrompt,
     temperature: 0.8,
     responseMimeType: 'application/json',
   });
 
-  return parseJsonResponse(content);
+  return textService.parseJsonResponse(content);
 }
 
 module.exports = { generate };
