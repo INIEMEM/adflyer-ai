@@ -111,7 +111,7 @@ Do not include fake brand names. Make this look like a polished, modern advertis
       parameters: {
         width: 1024,
         height: 1024,
-        num_inference_steps: 25,
+        num_inference_steps: 4,
         guidance_scale: 7.5,
         negative_prompt: 'blurry, low quality, misspelled words, distorted text, extra fingers, watermark, nsfw',
       },
