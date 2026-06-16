@@ -93,7 +93,8 @@ function getPublicErrorMessage(error) {
     return message;
   }
 
-  return 'Internal server error';
+  // For debugging, we are temporarily exposing the raw error message
+  return message || 'Internal server error';
 }
 
 // ── Global error handler ──────────────────────────────────────────────────────
