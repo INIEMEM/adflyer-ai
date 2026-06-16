@@ -17,7 +17,7 @@ services:
       - key: HF_TEXT_MODEL
         value: meta-llama/Llama-3.3-70B-Instruct
       - key: HF_MODEL
-        value: black-forest-labs/FLUX.1-dev
+        value: stabilityai/stable-diffusion-xl-base-1.0
       - key: POLLINATIONS_IMAGE_URL
         value: https://image.pollinations.ai
       - key: OPENAI_API_KEY

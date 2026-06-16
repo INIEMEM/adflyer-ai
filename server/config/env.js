@@ -14,7 +14,7 @@ const config = {
   IMAGE_GEN_API_KEY: process.env.IMAGE_GEN_API_KEY,
   HF_TOKEN:          process.env.HF_TOKEN,
   HF_TEXT_MODEL:     process.env.HF_TEXT_MODEL || 'meta-llama/Llama-3.3-70B-Instruct',
-  HF_MODEL:          process.env.HF_MODEL || 'black-forest-labs/FLUX.1-dev',
+  HF_MODEL:          process.env.HF_MODEL || 'stabilityai/stable-diffusion-xl-base-1.0',
   POLLINATIONS_IMAGE_URL: process.env.POLLINATIONS_IMAGE_URL || 'https://image.pollinations.ai',
 };
 
