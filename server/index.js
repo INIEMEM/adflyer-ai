@@ -81,6 +81,14 @@ function getPublicErrorMessage(error) {
     return 'The configured OpenAI model is unavailable for this API key.';
   }
 
+  if (message.includes('HF_TOKEN is not set')) {
+    return 'Hugging Face Token is missing on the backend. Set HF_TOKEN in Render and redeploy.';
+  }
+
+  if (message.includes('HuggingFace') || message.includes('HF')) {
+    return 'Hugging Face API Error: ' + message;
+  }
+
   if (message.includes('CORS blocked origin')) {
     return message;
   }
