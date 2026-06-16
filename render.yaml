@@ -9,7 +9,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: AI_PROVIDER
-        value: huggingface
+        value: gemini
       - key: IMAGE_PROVIDER
         value: huggingface
       - key: HF_TOKEN

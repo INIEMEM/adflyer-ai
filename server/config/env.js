@@ -9,7 +9,7 @@ const config = {
   GEMINI_API_KEY:    process.env.GEMINI_API_KEY,
   GEMINI_MODEL:      process.env.GEMINI_MODEL || 'gemini-3.1-flash-lite',
   GEMINI_IMAGE_MODEL: process.env.GEMINI_IMAGE_MODEL || 'gemini-3.1-flash-image',
-  AI_PROVIDER:       process.env.AI_PROVIDER || 'huggingface',
+  AI_PROVIDER:       process.env.AI_PROVIDER || 'gemini',
   IMAGE_PROVIDER:    process.env.IMAGE_PROVIDER || 'huggingface',
   IMAGE_GEN_API_KEY: process.env.IMAGE_GEN_API_KEY,
   HF_TOKEN:          process.env.HF_TOKEN,
