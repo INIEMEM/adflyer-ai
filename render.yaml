@@ -9,26 +9,20 @@ services:
       - key: NODE_ENV
         value: production
       - key: AI_PROVIDER
-        value: openai
-      - key: OPENAI_API_KEY
-        sync: false
-      - key: OPENAI_TEXT_MODEL
-        value: gpt-4o
-      - key: OPENAI_IMAGE_MODEL
-        value: gpt-image-1
-      - key: GEMINI_API_KEY
-        sync: false
-      - key: GEMINI_MODEL
-        value: gemini-3.1-flash-lite
-      - key: GEMINI_IMAGE_MODEL
-        value: gemini-3.1-flash-image
+        value: huggingface
       - key: IMAGE_PROVIDER
-        value: openai
+        value: huggingface
       - key: HF_TOKEN
         sync: false
+      - key: HF_TEXT_MODEL
+        value: meta-llama/Llama-3.3-70B-Instruct
       - key: HF_MODEL
-        value: ByteDance/Hyper-SD
+        value: black-forest-labs/FLUX.1-dev
       - key: POLLINATIONS_IMAGE_URL
         value: https://image.pollinations.ai
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
       - key: CLIENT_URL
         value: https://adflyer-ai.vercel.app

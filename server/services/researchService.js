@@ -1,8 +1,12 @@
 const { AI_PROVIDER } = require('../config/env');
 const geminiService = require('./geminiService');
 const openaiService = require('./openaiService');
+const hfService     = require('./hfService');
 
-const textService = AI_PROVIDER === 'gemini' ? geminiService : openaiService;
+const textService =
+  AI_PROVIDER === 'gemini'      ? geminiService :
+  AI_PROVIDER === 'huggingface' ? hfService :
+  openaiService;
 
 /**
  * Analyzes business info and returns market research data.
